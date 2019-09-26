@@ -15,13 +15,15 @@ D2 <- filter(D1, schoolyear == 20112012)
 
 #Histograms
 ```{r}
-#Generate a histogramof the percentage of free/reduced lunch students (frl_percent) at each school
+#Generate a histogram of the percentage of free/reduced lunch students (frl_percent) at each school
 
-hist()
+hist(D2$frl_percent)
 
 #Change the number of breaks to 100, do you get the same impression?
 
 hist(D2$frl_percent, breaks = 100)
+
+#Yes. Both histograms show negative skew with most data around 80% of students with free/reduced lunch.
 
 #Cut the y-axis off at 30
 
@@ -30,8 +32,6 @@ hist(D2$frl_percent, breaks = 100, ylim = c(0,30))
 #Restore the y-axis and change the breaks so that they are 0-10, 10-20, 20-80, 80-100
 
 hist(D2$frl_percent, breaks = c(0,10,20,80,100))
-
-
 
 ```
 
@@ -76,25 +76,33 @@ pairs(D5)
 1. Create a simulated data set containing 100 students, each with a score from 1-100 representing performance in an educational game. The scores should tend to cluster around 75. Also, each student should be given a classification that reflects one of four interest groups: sport, music, nature, literature.
 
 ```{r}
-#rnorm(100, 75, 15) creates a random sample with a mean of 75 and standard deviation of 20
+#rnorm(100, 75, 15) creates a random sample with a mean of 75 and standard deviation of 15
 #pmax sets a maximum value, pmin sets a minimum value
 #round rounds numbers to whole number values
 #sample draws a random samples from the groups vector according to a uniform distribution
-
-
+studentPerformance = rnorm(100, 75, 15)
+studentPerformance[studentPerformance > 100] = 100
+studentPerformance[studentPerformance < 1] = 1
+studentPerformance = round(studentPerformance)
+studentInterest = sample(c("sport", "music", "nature", "literature"), size = 100, replace = TRUE)
+studentData = data.frame(id = c(1:100), studentPerformance, studentInterest)
 ```
 
 2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
 
 ```{r}
-
+hist(studentData$studentPerformance, breaks = 8)
 ```
-
 
 3. Create a new variable that groups the scores according to the breaks in your histogram.
 
 ```{r}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
+letters = c("F", "E", "D", "C", "B", "A")
+studentGrade = cut(studentData$studentPerformance,
+                  breaks = c(40, 50, 60, 70, 80, 90, 100),
+                  labels = letters)
+studentData = cbind(studentData, studentGrade)
 
 ```
 
@@ -106,9 +114,10 @@ library(RColorBrewer)
 
 #The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
 #Make RColorBrewer palette available to R and assign to your bins
+histColourPalette = brewer.pal(7, "OrRd")
 
 #Use named palette in histogram
-
+hist(studentData$studentPerformance, breaks = 8, col = histColourPalette)
 ```
 
 
@@ -116,20 +125,26 @@ library(RColorBrewer)
 
 ```{r}
 #Make a vector of the colors from RColorBrewer
-
+boxColourPalette = brewer.pal(4, "Spectral")
+boxplot(studentData$studentPerformance ~ studentData$studentInterest, col = boxColourPalette)
 ```
-
 
 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
 
 ```{r}
-
+logins = sample(c(1:25), size = 100, replace = TRUE)
+studentData = cbind(studentData, logins)
 ```
 
 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
 
 ```{r}
-
+plot(studentData$studentPerformance, studentData$logins,
+     main = "Plot of Logins against scores",
+     xlab = "Student Scores",
+     ylab = "Student Logins",
+     col = studentData$studentInterest,
+     pch=19)
 
 ```
 
@@ -137,14 +152,13 @@ library(RColorBrewer)
 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
 
 ```{r}
-
+plot(AirPassengers, type = "l")
 ```
-
 
 9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
 
 ```{r}
-
+pairs(iris)
 ```
 
 10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
