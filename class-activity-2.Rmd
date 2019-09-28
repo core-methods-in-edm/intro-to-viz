@@ -1,23 +1,23 @@
 ---
-title: "intro to viz"
-author: "Charles Lang"
+title: "class-activity-2"
+author: "Minruo Wang (mw3399)"
 date: "September 26, 2019"
 output: html_document
 ---
-#Input
-```{r}
+## Guide from Charles  
+### Input  
+```{r data input}
 D1 <- read.csv("School_Demographics_and_Accountability_Snapshot_2006-2012.csv", header = TRUE, sep = ",")
 
 #Create a data frame only contains the years 2011-2012
 library(dplyr)
 D2 <- filter(D1, schoolyear == 20112012)
 ```
-
-#Histograms
-```{r}
+  
+### Histograms  
+```{r histograms}
 #Generate a histogramof the percentage of free/reduced lunch students (frl_percent) at each school
-
-hist()
+#hist()
 
 #Change the number of breaks to 100, do you get the same impression?
 
@@ -31,12 +31,10 @@ hist(D2$frl_percent, breaks = 100, ylim = c(0,30))
 
 hist(D2$frl_percent, breaks = c(0,10,20,80,100))
 
-
-
 ```
-
-#Plots
-```{r}
+  
+### Plots  
+```{r plots}
 #Plot the number of English language learners (ell_num) by Computational Thinking Test scores (ctt_num) 
 
 plot(D2$ell_num, D2$ctt_num)
@@ -47,6 +45,7 @@ y <- c(2,4,2,3,2,4,3)
 
 #Create a table from x & y
 table1 <- table(x,y)
+table1
 
 #Display the table as a Barplot
 barplot(table1)
@@ -64,89 +63,160 @@ D4 <- filter(D1, DBN == "31R075"|DBN == "01M015"| DBN == "01M345")
 D4 <- droplevels(D4)
 boxplot(D4$total_enrollment ~ D4$DBN)
 ```
-#Pairs
+  
+### Pairs  
 ```{r}
 #Use matrix notation to select columns 5,6, 21, 22, 23, 24
 D5 <- D2[,c(5,6, 21:24)]
 #Draw a matrix of plots for every combination of variables
 pairs(D5)
 ```
-# Exercise
+  
+## Exercise  
+##### 1. Create a simulated data set containing 100 students, each with a score from 1-100 representing performance in an educational game. The scores should tend to cluster around 75. Also, each student should be given a classification that reflects one of four interest groups: sport, music, nature, literature.
 
-1. Create a simulated data set containing 100 students, each with a score from 1-100 representing performance in an educational game. The scores should tend to cluster around 75. Also, each student should be given a classification that reflects one of four interest groups: sport, music, nature, literature.
-
-```{r}
+```{r data simulation}
+set.seed(123)  
 #rnorm(100, 75, 15) creates a random sample with a mean of 75 and standard deviation of 20
+StudentScores <- rnorm(100, 75, 20)
+StudentScores <- runif(100, min = 1, max = 100)
 #pmax sets a maximum value, pmin sets a minimum value
+StudentScores <- pmax(1, StudentScores)
+StudentScores <- pmin(100, StudentScores)
+
 #round rounds numbers to whole number values
+StudentScores <- round(StudentScores, digits = 0)
+
+InterestGroups <- c("sport", "music", "nature", "literature")
+stu_df <- data.frame(StudentScores, InterestGroups)
+stu_df
+
 #sample draws a random samples from the groups vector according to a uniform distribution
+```
+  
+##### 2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
 
-
+```{r score histogram}
+score_hist <- hist(stu_df$StudentScores, 
+     breaks = 10, 
+     ylim = c(0,20), 
+     main = "Frequency Distribution of Performance in an Educational Game", 
+     xlab = "Scores", 
+     labels = TRUE)
 ```
 
-2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
+  
+##### 3. Create a new variable that groups the scores according to the breaks in your histogram.
 
-```{r}
-
-```
-
-
-3. Create a new variable that groups the scores according to the breaks in your histogram.
-
-```{r}
+```{r score groups}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
-
+letters <- c("F", "D", "C", "B", "A")
+Grade <- cut(stu_df$StudentScores, breaks = c(0,60,70,80,90,100), labels = letters)
+stu_df_ext <- cbind(stu_df, Grade)
+stu_df_ext
 ```
+  
+##### 4. Now using the colorbrewer package [RColorBrewer] (http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) design a pallette and assign it to the groups in your data on the histogram.
 
-4. Now using the colorbrewer package (RColorBrewer; http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) design a pallette and assign it to the groups in your data on the histogram.
-
-```{r}
+```{r colorbrewer}
 library(RColorBrewer)
 #Let's look at the available palettes in RColorBrewer
+display.brewer.all()
 
 #The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
 #Make RColorBrewer palette available to R and assign to your bins
-
+ 
 #Use named palette in histogram
-
+score_hist_color <- hist(stu_df_ext$StudentScores, 
+     breaks = 5,
+     xlim = c(0,100),
+     ylim = c(0,30), 
+     main = "Frequency Distribution of Performance in an Educational Game", 
+     xlab = "Scores", 
+     col = brewer.pal(5, "Greens"),
+     labels = TRUE)
 ```
+  
 
+##### 5. Create a boxplot that visualizes the scores for each interest group and color each interest group a different color.  
 
-5. Create a boxplot that visualizes the scores for each interest group and color each interest group a different color.
-
-```{r}
+```{r boxplot}
 #Make a vector of the colors from RColorBrewer
+library(ggplot2)
+boxplot_score <- ggplot(stu_df_ext, aes(x=stu_df_ext$InterestGroups, y=stu_df_ext$StudentScores)) + 
+  geom_boxplot(fill=brewer.pal(4, "Blues")) +
+  xlab("Interest Groups") +
+  ylab("Student Scores") +
+  ggtitle("Boxplot of Scores for Each Interest Group")
+boxplot_score
+```
+
+  
+##### 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.  
+
+```{r logins}
+set.seed(123)
+# generate 100 random numbers betweem 1-25
+Logins <- sample(1:25, 100, replace = TRUE)
+# assign to students
+stu_df_ext_2 <- cbind(stu_df_ext, Logins)
+stu_df_ext_2
+```
+  
+##### 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.  
+
+```{r scatter plot}
+plot_log_score <- ggplot(stu_df_ext_2, aes(x = Logins, y = StudentScores, color = InterestGroups)) + 
+  geom_point() +
+  ggtitle("Scatter Plot of Student Logins and Scores")
+plot_log_score
+```
+
+  
+##### 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.  
+
+```{r AirPassengers}
+# look at the dataset AirPassengers
+AirPassengers
+# line graph
+air_plot <- plot(AirPassengers, type = "l", lty = "dashed")
+```
+
+  
+##### 9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on?  
+There are statistically significant correlation between those pairs of variables: Sepal.Length and Petal.Length, Sepal.Length and Petal.Width, Sepal.Width and Petal.Length, Sepal.Width and Petal.Width.
+  
+```{r pair plots}
+library("ggpubr")
+
+# a brief look at the dataset iris
+head(iris)
+# show the relationships between each pair of variables in the data frame
+pairs(iris)
+
+# The plots suggest correlation between each pair of variables except Species. We will use correlatiion tests to examine the significance of correlation.
+```
+  
+```{r correlation test}
+# Correlation tests using Pearson
+cor.test(iris$Sepal.Length, iris$Sepal.Width, method = "pearson", use = "complete.obs")
+# Since p-value = 0.1519 > 0.05, there is no statistically significant correlation.
+
+cor.test(iris$Sepal.Length, iris$Petal.Length, method = "pearson", use = "complete.obs")
+# Since p-value < 2.2e-16 < 0.05, there is statistically significant correlation.
+
+cor.test(iris$Sepal.Length, iris$Petal.Width, method = "pearson", use = "complete.obs")
+# Since p-value < 2.2e-16 < 0.05, there is statistically significant correlation.
+
+cor.test(iris$Sepal.Width, iris$Petal.Length, method = "pearson", use = "complete.obs")
+# Since p-value = 4.513e-08 < 0.05, there is statistically significant correlation.
+
+cor.test(iris$Sepal.Width, iris$Petal.Width, method = "pearson", use = "complete.obs")
+# Since p-value = 4.073e-06 < 0.05, there is statistically significant correlation.
 
 ```
 
-
-6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
-
-```{r}
-
-```
-
-7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
-
-```{r}
-
-
-```
-
-
-8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
-
-```{r}
-
-```
-
-
-9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
-
-```{r}
-
-```
-
-10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
-
-11. Commit, Push and Pull Request your work back to the main branch of the repository 
+  
+##### 10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.  
+  
+##### 11. Commit, Push and Pull Request your work back to the main branch of the repository 
