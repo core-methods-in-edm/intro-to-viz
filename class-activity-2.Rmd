@@ -1,7 +1,7 @@
 ---
-title: "intro to viz"
-author: "Charles Lang"
-date: "September 26, 2019"
+title: "Class Activity 2"
+author: "Ningyao Xu"
+date: "September 28, 2019"
 output: html_document
 ---
 #Input
@@ -17,7 +17,7 @@ D2 <- filter(D1, schoolyear == 20112012)
 ```{r}
 #Generate a histogramof the percentage of free/reduced lunch students (frl_percent) at each school
 
-hist()
+hist(D2$frl_percent)
 
 #Change the number of breaks to 100, do you get the same impression?
 
@@ -30,7 +30,6 @@ hist(D2$frl_percent, breaks = 100, ylim = c(0,30))
 #Restore the y-axis and change the breaks so that they are 0-10, 10-20, 20-80, 80-100
 
 hist(D2$frl_percent, breaks = c(0,10,20,80,100))
-
 
 
 ```
@@ -80,13 +79,24 @@ pairs(D5)
 #pmax sets a maximum value, pmin sets a minimum value
 #round rounds numbers to whole number values
 #sample draws a random samples from the groups vector according to a uniform distribution
-
+set.seed(123)
+performance <- as.numeric(round(rnorm(100, 75, 15)))
+Class <- c("sport","music","nature","literature")
+Interest <- as.character(sample(Class, 100, replace = TRUE, prob = NULL))
+data1 <- as.data.frame(cbind(performance,Interest))
 
 ```
 
 2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
 
 ```{r}
+#Generate a histogramof the scores
+hist(performance)
+min(performance)
+max(performance)
+#So the range of the performance is (40, 108).
+#Then we Change the breaks so that they are 39-60(F), 60-70(D), 70-80(C),89-90(B),90-110(A). In this case, we can define their grade level directly based on the groups they are in. 
+hist(performance, breaks = c(39,60,70,80,90,110))
 
 ```
 
@@ -95,6 +105,8 @@ pairs(D5)
 
 ```{r}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
+cut1 <- cut(performance,breaks =  c(39,60,70,80,90,110),labels = letters[1:5])
+new_performance <- as.data.frame(cbind(performance,as.character(cut1)))
 
 ```
 
@@ -108,14 +120,20 @@ library(RColorBrewer)
 #Make RColorBrewer palette available to R and assign to your bins
 
 #Use named palette in histogram
+library("ggplot2")
+mypalette<-brewer.pal(5,"Greens")
+ggplot(new_performance, aes(x=cut1))+ geom_histogram(stat="count",fill= mypalette,binwidth = 0.01,bins = 200) +scale_x_discrete(labels=c("F","D","C","B","A"))
 
 ```
+
+In this histogram, the greener the group is, the better performance students in that group have.
 
 
 5. Create a boxplot that visualizes the scores for each interest group and color each interest group a different color.
 
 ```{r}
 #Make a vector of the colors from RColorBrewer
+boxplot(performance ~ data1$Interest,col=brewer.pal(4,"BrBG"))
 
 ```
 
@@ -123,13 +141,16 @@ library(RColorBrewer)
 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
 
 ```{r}
-
+set.seed(123)
+(logins <- round(runif(100,min=1,max=25)))
 ```
 
 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
 
 ```{r}
 
+data1$logins <- logins
+ggplot(data1, aes(logins, performance)) +  geom_point(aes(colour = factor(Interest)))+scale_y_discrete(breaks =  c(39,60,70,80,90,110),labels=c("F","D","C","B","A",""))
 
 ```
 
@@ -137,15 +158,38 @@ library(RColorBrewer)
 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
 
 ```{r}
-
+plot(AirPassengers,xlab="Date", ylab = "Passenger numbers (1000's)",main="Air Passenger numbers from 1949 to 1961")
 ```
 
 
 9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
 
 ```{r}
-
+my_cols <- c("#00AFBB", "#E7B800", "#FC4E07")
+# Correlation panel
+panel.cor <- function(x, y){
+    usr <- par("usr"); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r <- round(cor(x, y), digits=2)
+    txt <- paste0("R = ", r)
+    cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+# Customize upper panel
+upper.panel<-function(x, y){
+  points(x,y, pch = 19, cex =0.7, col = my_cols[iris$Species])
+}
+# Create the plots
+pairs(iris[,1:4], 
+      lower.panel = panel.cor,
+      upper.panel = upper.panel)
 ```
+
+As we can see, there are three relationships that is appropraiet to run a correlation on,
+1)The correlation coefficient  between the length of sepal and length of petal is 0.87.
+2)The correlation coefficient  between the length of sepal and width of petal is 0.82.
+3)The correlation coefficient  between the length of petal and width of petal is 0.92.
+
 
 10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
 
