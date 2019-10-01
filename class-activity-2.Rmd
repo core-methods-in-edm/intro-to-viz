@@ -1,6 +1,6 @@
 ---
 title: "intro to viz"
-author: "Charles Lang"
+author: "Hsiao Yang"
 date: "September 26, 2019"
 output: html_document
 ---
@@ -17,7 +17,7 @@ D2 <- filter(D1, schoolyear == 20112012)
 ```{r}
 #Generate a histogramof the percentage of free/reduced lunch students (frl_percent) at each school
 
-hist()
+
 
 #Change the number of breaks to 100, do you get the same impression?
 
@@ -80,13 +80,18 @@ pairs(D5)
 #pmax sets a maximum value, pmin sets a minimum value
 #round rounds numbers to whole number values
 #sample draws a random samples from the groups vector according to a uniform distribution
-
-
+set.seed(321)
+id<- seq(1,100,1)
+student_score<-round(pmax(1,pmin(100, rnorm(100,75,15))))
+interest<- c("sport", "music", "nature", "literature")
+Interest <- sample(interest,100, replace=TRUE)
+df <- data.frame(id,student_score,Interest)
 ```
 
 2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
 
 ```{r}
+hist(df$student_score, breaks = 5)
 
 ```
 
@@ -95,6 +100,8 @@ pairs(D5)
 
 ```{r}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
+letters<- c("F", "D", "C", "B", "A")
+df$letter_grade<-cut(df$student_score, breaks = c(100,90,80,70,60,0), labels = letters)
 
 ```
 
@@ -103,12 +110,14 @@ pairs(D5)
 ```{r}
 library(RColorBrewer)
 #Let's look at the available palettes in RColorBrewer
-
+ colors <- brewer.pal(5, "BuPu")
 #The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
 #Make RColorBrewer palette available to R and assign to your bins
 
-#Use named palette in histogram
 
+#Use named palette in histogram
+ 
+hist(df$student_score, breaks = 5, col =colors)
 ```
 
 
@@ -116,37 +125,45 @@ library(RColorBrewer)
 
 ```{r}
 #Make a vector of the colors from RColorBrewer
-
+boxplot(df$student_score~df$Interest, col =colors)
 ```
 
 
 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
 
 ```{r}
+df$logins<- sample(1:25,100,replace=TRUE)
 
 ```
 
 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
 
 ```{r}
-
-
+plot(df$logins, df$student_score, col=df$Interest, pch=19)
 ```
 
 
 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
 
 ```{r}
-
+plot.ts(AirPassengers)
 ```
 
 
 9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
 
 ```{r}
-
+I <- iris
+plot(I)
+# sepal.length and petal.length; petal.width and petal.length
 ```
-
+```{r}
+cor.test(I$Sepal.Length, I$Petal.Length)
+```
+```{r}
+cor.test(I$Petal.Width, I$Petal.Length)
+```
+ 
 10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
 
 11. Commit, Push and Pull Request your work back to the main branch of the repository 
