@@ -1,0 +1,173 @@
+---
+title: "Class-Activity-2-JUNG"
+author: "SuwonJung"
+date: "9/26/2019"
+output: html_document
+---
+
+```{r}
+D1 <- read.csv("School_Demographics_and_Accountability_Snapshot_2006-2012.csv", header = TRUE, sep = ",")
+
+#Create a data frame only contains the years 2011-2012
+library(dplyr)
+D2 <- filter(D1,schoolyear == 20112012)
+```
+#Histograms
+```{r}
+#Generate a histogram of the percentage of free/reduced lunch students (frl_percent) at each school
+
+hist(D2$frl_percent)
+
+#Change the number of breaks to 100, do you get the same impression?
+
+hist(D2$frl_percent, breaks = 100)
+
+#Cut the y-axis off at 30
+
+hist(D2$frl_percent, breaks = 100, ylim = c(0,30))
+
+#Restore the y-axis and change the breaks so that they are 0-10, 10-20, 20-80, 80-100
+
+hist(D2$frl_percent, breaks = c(0,10,20,80,100))
+
+
+
+```
+
+#Plots
+```{r}
+#Plot the number of English language learners (ell_num) by Computational Thinking Test scores (ctt_num) 
+
+plot(D2$ell_num, D2$ctt_num)
+
+#Create two variables x & y
+x <- c(1,3,2,7,6,4,4)
+y <- c(2,4,2,3,2,4,3)
+
+#Create a table from x & y
+table1 <- table(x,y)
+
+#Display the table as a Barplot
+barplot(table1)
+
+#Create a data frame of the average total enrollment for each year and plot the two against each other as a lines
+
+library(tidyr)
+D3 <- D1 %>% group_by(schoolyear) %>% summarise(mean_enrollment = mean(total_enrollment))
+
+plot(D3$schoolyear, D3$mean_enrollment, type = "l", lty = "dashed")
+
+#Create a boxplot of total enrollment for three schools
+D4 <- filter(D1, DBN == "31R075"|DBN == "01M015"| DBN == "01M345")
+#The drop levels command will remove all the schools from the variable with not data  
+D4 <- droplevels(D4)
+boxplot(D4$total_enrollment ~ D4$DBN)
+```
+#Pairs
+```{r}
+#Use matrix notation to select columns 5,6, 21, 22, 23, 24
+D5 <- D2[,c(5,6, 21:24)]
+#Draw a matrix of plots for every combination of variables
+pairs(D5)
+```
+# Exercise
+
+#1. Create a simulated data set containing 100 students, each with a score from 1-100 representing performance in an educational game. The scores should tend to cluster around 75. Also, each student should be given a classification that reflects one of four interest groups: sport, music, nature, literature.
+
+```{r}
+#rnorm(100, 75, 15) creates a random sample with a mean of 75 and standard deviation of 20
+#pmax sets a maximum value, pmin sets a minimum value
+#round rounds numbers to whole number values
+#sample draws a random samples from the groups vector according to a uniform distribution
+
+set.seed(100)
+InterestGroups = c("sport","music","nature","literature")
+scores <- round(rnorm(100, 75, 15))
+scores <- pmax(0, scores)
+scores <- pmin (100, scores)
+studentdata <- data.frame("Scores" = scores, "Interest Groups" = sample(InterestGroups,replace=TRUE,100,prob=c(0.25, 0.25, 0.25, 0.25)))
+
+
+```
+
+2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
+
+```{r}
+scoresHistogram <- hist(studentdata$Scores, breaks = 20, main = "Student's performance in an educational game")
+```
+
+
+3. Create a new variable that groups the scores according to the breaks in your histogram.
+
+```{r}
+#cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
+groupScores <- cut(studentdata$Scores, 20, labels = letters[1:20])
+```
+
+4. Now using the colorbrewer package (RColorBrewer; http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) design a pallette and assign it to the groups in your data on the histogram.
+
+```{r}
+library(RColorBrewer)
+#Let's look at the available palettes in RColorBrewer
+
+#The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
+
+#Make RColorBrewer palette available to R and assign to your bins
+
+#Use named palette in histogram
+
+display.brewer.all() 
+cols <- brewer.pal(n = 8, name = "Accent")
+pal <- colorRampPalette(cols)
+hist(studentdata$Scores, breaks = 20, col=pal(20))
+```
+
+
+5. Create a boxplot that visualizes the scores for each interest group and color each interest group a different color.
+
+```{r}
+#Make a vector of the colors from RColorBrewer
+boxplot(studentdata$Scores~studentdata$Interest.Groups, col=pal(4))
+
+```
+
+
+6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
+
+```{r}
+set.seed(100)
+numlogin <- sample(1:25,100,replace=T)
+studentdata <- data.frame("Scores" = scores, "Interest Groups" = sample(InterestGroups,replace=TRUE,100,prob=c(0.25, 0.25, 0.25, 0.25)), "Number of Logins" = numlogin)
+```
+
+7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
+
+```{r}
+plot(studentdata$Scores~studentdata$Number.of.Logins,col=cols, xlab='Number of Logins', ylab='Scores', main='Relationship between scores and logins', xlim=c(0,35),ylim=c(30,110))
+legend(x="topright", legend = levels(studentdata$Interest.Groups), col=cols, pch=1)
+
+```
+
+
+8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
+
+```{r}
+plot(AirPassengers)
+```
+
+
+9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
+
+```{r}
+iris
+pairs(iris)
+##Relationships apporpriate to raun a corerlation on: 
+  #petal length and sepal length
+  #petal width and sepal length
+  #petal length and petal width
+```
+
+10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
+
+
+11. Commit, Push and Pull Request your work back to the main branch of the repository 
