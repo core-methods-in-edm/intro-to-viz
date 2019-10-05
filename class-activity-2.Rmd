@@ -92,6 +92,7 @@ D1 <- data.frame(studentid, scores, interest)
 
 ```{r}
 
+hist(D1$scores, breaks = 100)
 ```
 
 
@@ -100,6 +101,8 @@ D1 <- data.frame(studentid, scores, interest)
 ```{r}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
 
+D1$binned = cut(D1$scores, breaks = 10, labels = letters[1:10])
+
 ```
 
 4. Now using the colorbrewer package (RColorBrewer; http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) design a pallette and assign it to the groups in your data on the histogram.
@@ -107,11 +110,12 @@ D1 <- data.frame(studentid, scores, interest)
 ```{r}
 library(RColorBrewer)
 #Let's look at the available palettes in RColorBrewer
-
+display.brewer.all()
 #The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
 #Make RColorBrewer palette available to R and assign to your bins
-
+D1$colors <- brewer.pal(10, "Set3")
 #Use named palette in histogram
+hist(D1$score, col = D1$colors)
 
 ```
 
@@ -120,20 +124,24 @@ library(RColorBrewer)
 
 ```{r}
 #Make a vector of the colors from RColorBrewer
-
+interest.col <- brewer.pal(4, "Dark2")
+boxplot(scores ~ interest, D1, col = interest.col)
+plot(D1$interest, D1$scores)
 ```
 
 
 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
 
 ```{r}
+D1$login <- sample(1:25, 100, replace = TRUE)
 
 ```
 
 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
 
 ```{r}
-
+D1$col1 <- ifelse (D1$interest == "music", "red", "green")
+plot(D1$login, D1$scores, col = D1$col1)
 
 ```
 
@@ -141,14 +149,16 @@ library(RColorBrewer)
 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
 
 ```{r}
-
+AP <- data.frame (AirPassengers)
+plot(AP)
+head(AP)
 ```
 
 
 9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
 
 ```{r}
-
+pairs(iris)
 ```
 
 10. Finally use the knitr function to generate an html document from your work. If you have time, try to change some of the output using different commands from the RMarkdown cheat sheet.
