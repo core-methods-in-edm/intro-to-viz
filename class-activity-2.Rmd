@@ -15,9 +15,9 @@ D2 <- filter(D1, schoolyear == 20112012)
 
 #Histograms
 ```{r}
-#Generate a histogramof the percentage of free/reduced lunch students (frl_percent) at each school
+#Generate a histogram of the percentage of free/reduced lunch students (frl_percent) at each school
 
-hist()
+hist(D2$frl_percent)
 
 #Change the number of breaks to 100, do you get the same impression?
 
@@ -60,7 +60,7 @@ plot(D3$schoolyear, D3$mean_enrollment, type = "l", lty = "dashed")
 
 #Create a boxplot of total enrollment for three schools
 D4 <- filter(D1, DBN == "31R075"|DBN == "01M015"| DBN == "01M345")
-#The drop levels command will remove all the schools from the variable with not data  
+#The drop levels command will remove all the schools from the variable with no data  
 D4 <- droplevels(D4)
 boxplot(D4$total_enrollment ~ D4$DBN)
 ```
@@ -79,15 +79,20 @@ pairs(D5)
 #rnorm(100, 75, 15) creates a random sample with a mean of 75 and standard deviation of 20
 #pmax sets a maximum value, pmin sets a minimum value
 #round rounds numbers to whole number values
-#sample draws a random samples from the groups vector according to a uniform distribution
-
-
+#sample draws a random sample from the groups vector according to a uniform distribution
+set.seed(12)
+student <- seq(1,100)
+scores <- round(rnorm(100, 75, 20))
+scores <- pmax(1,pmin(scores,100))
+groups <- c("sport", "music", "nature", "literature")
+interest <- sample(groups,100,replace = TRUE)
+D6 <- data.frame(student,scores,interest)
 ```
 
 2. Using base R commands, draw a histogram of the scores. Change the breaks in your histogram until you think they best represent your data.
 
 ```{r}
-
+hist(D6$scores,breaks = 10)
 ```
 
 
@@ -96,6 +101,9 @@ pairs(D5)
 ```{r}
 #cut() divides the range of scores into intervals and codes the values in scores according to which interval they fall. We use a vector called `letters` as the labels, `letters` is a vector made up of the letters of the alphabet.
 
+D6$binned = cut(D6$scores,breaks = 10,labels = letters[1:10])
+
+
 ```
 
 4. Now using the colorbrewer package (RColorBrewer; http://colorbrewer2.org/#type=sequential&scheme=BuGn&n=3) design a pallette and assign it to the groups in your data on the histogram.
@@ -103,11 +111,18 @@ pairs(D5)
 ```{r}
 library(RColorBrewer)
 #Let's look at the available palettes in RColorBrewer
+display.brewer.all()
 
 #The top section of palettes are sequential, the middle section are qualitative, and the lower section are diverging.
 #Make RColorBrewer palette available to R and assign to your bins
+D6$colors <- brewer.pal(10, "Set3")
+
+##Why add the colors to the dataframe? Why not just have it be an environment variable? The way it shows in my project, as a new column in the dataframe, seems random.
 
 #Use named palette in histogram
+hist(D6$scores, col = D6$colors)
+
+
 
 ```
 
@@ -116,6 +131,10 @@ library(RColorBrewer)
 
 ```{r}
 #Make a vector of the colors from RColorBrewer
+interest.color <- brewer.pal(4, name = "Set2")
+boxplot(D6$scores ~ interest, col = interest.color)
+
+##Why does the solution show an additional plot() function here?
 
 ```
 
@@ -123,13 +142,19 @@ library(RColorBrewer)
 6. Now simulate a new variable that describes the number of logins that students made to the educational game. They should vary from 1-25.
 
 ```{r}
+D6$logins <- sample(1:25,length(student), replace = TRUE)
 
 ```
 
 7. Plot the relationships between logins and scores. Give the plot a title and color the dots according to interest group.
 
 ```{r}
+D6$col1 <- ifelse(D6$interest == "music", interest.color[1], ifelse(D6$interest == "literature", interest.color[2], ifelse(D6$interest == "sport", interest.color[3], ifelse(D6$interest == "nature", interest.color[4],NA
+))))
 
+plot(D6$logins, D6$scores, main = "Relationship between logins and scores.", col = D6$col1)
+
+##A couple of things. "red" and "green" shown in the solution did not yield anything on my end, so I chose items from the interest.color vector. Also, the ifelse statement shown in the solution only distinguishes between music and not music--why? Is the idea to leave the nesting of ifelse statements as an excercise, or did I misread the prompt? And last, with the answer as shown on github, where you store the color in the col1 variable after calling it in the plot function, it works as expected in R studio but not in the knit HTML doc. To get my colors to show in the HTML, I had to switch the order of those statements.
 
 ```
 
@@ -137,13 +162,18 @@ library(RColorBrewer)
 8. R contains several inbuilt data sets, one of these in called AirPassengers. Plot a line graph of the the airline passengers over time using this data set.
 
 ```{r}
+AirPassengers
+plot(AirPassengers)
 
 ```
 
 
-9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropraiet to run a correlation on? 
+9. Using another inbuilt data set, iris, plot the relationships between all of the variables in the data set. Which of these relationships is it appropriate to run a correlation on? 
 
 ```{r}
+iris
+pairs(iris)
+#I didnt see an explicit answer to these, and I'm not sure how to answer, but if I could, how could I tell which pair is which?
 
 ```
 
